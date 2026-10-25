@@ -33,8 +33,8 @@ Pick one from the **Theme** menu in the top corner: Ember, Daylight, Midnight, H
 You need Python 3.8 or newer. There's nothing else to install.
 
 ```bash
-git clone https://github.com/ItsFlipppp/pitboss-live.git
-cd pitboss-live
+git clone https://github.com/ItsFlipppp/grill-live.git
+cd grill-live
 python server.py
 ```
 
