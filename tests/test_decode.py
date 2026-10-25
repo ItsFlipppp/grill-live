@@ -56,5 +56,25 @@ class StatsTest(unittest.TestCase):
         self.assertIsNone(open_now)
 
 
+try:
+    import cv2
+    import numpy
+except ImportError:
+    cv2 = None
+
+
+@unittest.skipUnless(cv2, "OpenCV not installed")
+class QrTest(unittest.TestCase):
+    def test_codes_decode(self):
+        import qr
+        det = cv2.QRCodeDetector()
+        for text in ("http://192.168.1.7:8880", "http://10.0.0.123:65535/", "x" * 106):
+            with self.subTest(text=text):
+                m = numpy.array([[0 if d else 255 for d in row] for row in qr.make(text)], dtype=numpy.uint8)
+                m = numpy.pad(m, 4, constant_values=255)
+                img = cv2.resize(m, (m.shape[1] * 8, m.shape[0] * 8), interpolation=cv2.INTER_NEAREST)
+                self.assertEqual(det.detectAndDecode(img)[0], text)
+
+
 if __name__ == "__main__":
     unittest.main()

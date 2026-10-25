@@ -4,9 +4,9 @@ Talks to the grill's own Wi-Fi module over your home network (Mongoose OS RPC on
 port 80). It only reads: PB.GetState, Sys.GetInfo and an occasional Wi-Fi scan for
 signal strength. It never sends commands to the grill's controller.
 
-    python server.py                    # find the grill on your network
+    python server.py                    # find the grill, then scan the QR code with your phone
     python server.py --grill 192.168.1.50
-    python server.py --host 0.0.0.0     # reachable from your phone
+    python server.py --local-only       # only this computer can open the dashboard
     python server.py --demo             # simulated cook, no grill needed
 """
 
@@ -20,11 +20,14 @@ import os
 import random
 import socket
 import statistics
+import sys
 import threading
 import time
 import urllib.request
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+import qr
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOG_DIR = os.path.join(HERE, "logs")
@@ -72,7 +75,7 @@ link = {"ok": 0, "fail": 0, "rtt": collections.deque(maxlen=150)}
 wifi = {"rssi": None, "bssid": None, "channel": None, "name": None, "seen": None, "at": None}
 settings = {"lbPerAugerHour": 4.0, "augerTotal": 0.0, "hopper": None, "cookBoot": None,
             "grill": None, "apNames": {}}
-cfg = {"board": None, "demo": False, "wifiScanEvery": 600, "persist": True}
+cfg = {"board": None, "demo": False, "wifiScanEvery": 600, "persist": True, "phoneUrl": None}
 
 
 def load_settings():
@@ -194,15 +197,24 @@ def is_grill(info):
     return app[:2] in ("PB", "LB", "LF")
 
 
-def discover():
-    """Find the grill on this machine's /24: one HTTP probe per address, nothing heavier
-    (the ESP32 in the grill does not cope with aggressive scanning)."""
+def lan_ip():
+    """This computer's address on the home network (no packets are sent)."""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         s.connect(("10.255.255.255", 1))
-        me = s.getsockname()[0]
+        return s.getsockname()[0]
+    except OSError:
+        return None
     finally:
         s.close()
+
+
+def discover():
+    """Find the grill on this machine's /24: one HTTP probe per address, nothing heavier
+    (the ESP32 in the grill does not cope with aggressive scanning)."""
+    me = lan_ip()
+    if not me:
+        return None
     base = me.rsplit(".", 1)[0]
     print(f"Looking for a Pit Boss grill on {base}.0/24 ...", flush=True)
 
@@ -571,8 +583,10 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/state":
             with lock:
                 body = {k: v for k, v in latest.items() if k != "raw"}
-                body.update(now=time.time(), demo=cfg["demo"], derived=derived())
+                body.update(now=time.time(), demo=cfg["demo"], phoneUrl=cfg["phoneUrl"], derived=derived())
             return self.send(200, json.dumps(body), "application/json")
+        if path == "/phone.svg" and cfg["phoneUrl"]:
+            return self.send(200, qr.to_svg(cfg["phoneUrl"]), "image/svg+xml")
         if path == "/api/history":
             since = 0.0
             for kv in query.split("&"):
@@ -611,7 +625,8 @@ def main():
     ap = argparse.ArgumentParser(description="Live local dashboard for Pit Boss Wi-Fi grills (read-only).")
     ap.add_argument("--grill", help="grill IP or hostname (default: last one found, else search the network)")
     ap.add_argument("--port", type=int, default=8880)
-    ap.add_argument("--host", default="127.0.0.1", help="0.0.0.0 to open it to phones on your network")
+    ap.add_argument("--local-only", action="store_true", help="only this computer can open the dashboard")
+    ap.add_argument("--host", help=argparse.SUPPRESS)
     ap.add_argument("--interval", type=float, default=2.0, help="seconds between polls (default 2)")
     ap.add_argument("--board", choices=sorted(BOARDS), help="override the control board the grill reports")
     ap.add_argument("--no-wifi-scan", action="store_true", help="skip the 10-minute Wi-Fi signal scans")
@@ -645,12 +660,26 @@ def main():
         settings["grill"] = grill
         save_settings()
         load_today()
+    host = a.host or ("127.0.0.1" if a.local_only else "0.0.0.0")
+    if host not in ("127.0.0.1", "localhost"):
+        ip = lan_ip() if host == "0.0.0.0" else host
+        cfg["phoneUrl"] = f"http://{ip}:{a.port}" if ip else None
+    server = ThreadingHTTPServer((host, a.port), Handler)
     threading.Thread(target=poll, args=(grill, a.interval), daemon=True).start()
-    shown = "localhost" if a.host in ("127.0.0.1", "0.0.0.0") else a.host
-    print(f"Grill Live on http://{shown}:{a.port}  (grill: {grill})", flush=True)
-    if a.host == "0.0.0.0":
-        print("Phones on your network can open http://<this computer's IP>:" + str(a.port), flush=True)
-    ThreadingHTTPServer((a.host, a.port), Handler).serve_forever()
+    print(f"\nGrill Live is running (grill: {grill})\n", flush=True)
+    print(f"  On this computer:  http://localhost:{a.port}", flush=True)
+    if cfg["phoneUrl"]:
+        print(f"  On your phone:     {cfg['phoneUrl']}   (same Wi-Fi)\n", flush=True)
+        if sys.stdout.isatty():
+            if os.name == "nt":
+                os.system("")  # turns on colour codes in the Windows console
+            try:
+                print("  Scan this with your phone's camera:\n", flush=True)
+                print(qr.to_terminal(cfg["phoneUrl"]) + "\n", flush=True)
+            except UnicodeEncodeError:
+                print("  (Open the dashboard on this computer and tap 📱 for a QR code.)\n".encode(
+                    sys.stdout.encoding or "ascii", "replace").decode(sys.stdout.encoding or "ascii"), flush=True)
+    server.serve_forever()
 
 
 if __name__ == "__main__":

@@ -31,16 +31,18 @@ cd pitboss-live
 python server.py
 ```
 
-Then open **http://localhost:8880**. With no address given, it searches your network for the grill (one quick request per address), so switch the grill on first. It remembers the address for next time.
+Switch the grill on first. With no address given, Grill Live searches your network for the grill (one quick request per address) and remembers it for next time.
 
-**On your phone:** start it with `--host 0.0.0.0`, then open `http://<your computer's IP>:8880` on any phone on the same Wi-Fi.
+**📱 On your phone:** scan the QR code that appears in the terminal with your phone's camera. On your computer, open **http://localhost:8880** and tap **📱 Open on phone** for the same code. Your phone just needs to be on the same Wi-Fi. Once it's open, use **Add to Home Screen** to keep it one tap away.
+
+> The first time you run it, Windows or macOS may ask whether Python can accept connections on your network. Click **Allow** (private networks), or your phone won't be able to connect.
 
 **No grill handy?** `python server.py --demo` runs a simulated 2½-hour cook.
 
 | Option | What it does |
 |---|---|
 | `--grill 192.168.1.50` | Use this address and skip the search |
-| `--host 0.0.0.0` | Let phones and other devices on your network open the dashboard |
+| `--local-only` | Only this computer can open the dashboard (no phone access) |
 | `--port 8880` | Dashboard port |
 | `--interval 2` | Seconds between readings. The grill only refreshes every 2 seconds, so going lower gains nothing |
 | `--board PBV` | Force a control-board layout (see below) |
@@ -98,7 +100,7 @@ python -m unittest discover -s tests
 
 ## Credits
 
-The protocol and the per-board layouts come from [pytboss](https://github.com/dknowles2/pytboss) by David Knowles (Apache-2.0), the Python library behind the Home Assistant Pit Boss integration.
+The protocol and the per-board layouts come from [pytboss](https://github.com/dknowles2/pytboss) by David Knowles (Apache-2.0), the Python library behind the Home Assistant Pit Boss integration. The built-in QR code generator (`qr.py`) follows the structure of [Project Nayuki's QR Code generator](https://www.nayuki.io/page/qr-code-generator-library).
 
 ## License
 

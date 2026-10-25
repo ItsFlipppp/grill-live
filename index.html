@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Grill Live</title>
+<meta name="theme-color" content="#141110">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Grill Live">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -64,6 +69,18 @@ header .sub{color:var(--dim);font-size:13px}
 .probe{border-left:3px solid var(--line)}
 .probe.na{opacity:.45}
 .probe .v{font:700 28px/1.2 "JetBrains Mono",monospace}
+.phone-btn{font:600 12.5px Inter,sans-serif;padding:7px 12px;border-radius:999px;border:1px solid #5a3a22;background:rgba(255,122,47,.12);color:var(--ember2);cursor:pointer}
+.phone-btn[hidden]{display:none}
+.modal{position:fixed;inset:0;background:rgba(10,8,7,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal[hidden]{display:none}
+.modal-card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:18px;padding:22px;max-width:340px;width:100%;text-align:center}
+.modal-card h2{margin:0 0 4px;font-size:18px}
+.modal-card p{margin:0;color:var(--dim)}
+.modal-card img{width:220px;height:220px;margin:16px auto 10px;display:block;border-radius:10px;image-rendering:pixelated}
+.phone-url{font:600 14px "JetBrains Mono",monospace;color:var(--text);margin-bottom:12px;word-break:break-all}
+.modal-card .fine{font-size:12.5px;color:var(--faint);margin-bottom:16px}
+.modal-card .fine b{color:var(--dim)}
+.modal-card button{font:600 13px Inter,sans-serif;padding:9px 22px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--text);cursor:pointer}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
 .sec-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;min-height:30px}
 .sec-head h2{font-size:14px;margin:0;font-weight:600}
@@ -84,7 +101,19 @@ header .sub{color:var(--dim);font-size:13px}
     <h1>🔥 Grill Live</h1>
     <span class="sub" id="devname">Pit Boss</span>
     <div class="live"><span class="dot" id="dot"></span><span id="livetxt">Connecting…</span></div>
+    <button class="phone-btn" id="phone-btn" hidden>📱 Open on phone</button>
   </header>
+
+  <div class="modal" id="phone-modal" hidden>
+    <div class="modal-card" role="dialog" aria-label="Open on your phone">
+      <h2>Open on your phone</h2>
+      <p>Point your phone's camera at the code.</p>
+      <img id="phone-qr" alt="QR code for the dashboard address">
+      <div class="phone-url" id="phone-url"></div>
+      <p class="fine">Your phone needs to be on the same Wi-Fi as this computer. Once it's open, use <b>Add to Home Screen</b> to keep it one tap away.</p>
+      <button id="phone-close">Done</button>
+    </div>
+  </div>
 
   <div class="grid-top">
     <div class="card hero">
@@ -249,6 +278,8 @@ function drawChart(){
 function render(){
   if(!state) return;
   const s = state.sample || {}, d = state.derived || {}, u = state.fahrenheit ? '°F' : '°C';
+  const onThisPc = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+  $('phone-btn').hidden = !(state.phoneUrl && onThisPc);
   const fresh = state.now - state.lastOk < 10;
   $('dot').className = 'dot ' + (fresh ? 'on' : 'off');
   $('livetxt').textContent = fresh ? (state.demo ? 'Demo · simulated cook' : s.on ? 'Live · grill on' : 'Live · grill off') : (state.error ? 'Grill not answering' : 'Waiting…');
@@ -364,6 +395,16 @@ async function tick(){
     $('dot').className = 'dot off'; $('livetxt').textContent = 'Dashboard server stopped';
   }
 }
+
+$('phone-btn').addEventListener('click', () => {
+  $('phone-qr').src = '/phone.svg';
+  $('phone-url').textContent = state.phoneUrl;
+  $('phone-modal').hidden = false;
+});
+const closePhone = () => { $('phone-modal').hidden = true; };
+$('phone-close').addEventListener('click', closePhone);
+$('phone-modal').addEventListener('click', e => { if(e.target === $('phone-modal')) closePhone(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closePhone(); });
 
 $('ranges').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return;
