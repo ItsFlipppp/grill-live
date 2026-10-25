@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grill Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#141110;--panel:#1d1917;--panel2:#252019;--line:#352d27;--text:#f3ebe4;--dim:#a39488;--faint:#6f625a;
+  --ember:#ff7a2f;--ember2:#ffb15c;--set:#8fb6ff;--ok:#5fd38d;--bad:#ff5a5a;
+  --p1:#ffd166;--p2:#c792ea;--p3:#5ee0d0;--p4:#f78fb3;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,#2a1a10 0%,var(--bg) 60%) fixed,var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+header h1{font-size:18px;font-weight:700;margin:0;letter-spacing:.2px}
+header .sub{color:var(--dim);font-size:13px}
+.live{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--dim);font-size:13px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--faint)}
+.dot.on{background:var(--ok);box-shadow:0 0 0 0 rgba(95,211,141,.6);animation:ping 2s infinite}
+.dot.off{background:var(--bad)}
+@keyframes ping{70%{box-shadow:0 0 0 8px rgba(95,211,141,0)}100%{box-shadow:0 0 0 0 rgba(95,211,141,0)}}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:16px}
+.grid-top{display:grid;grid-template-columns:340px 1fr;gap:16px}
+.hero{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:330px}
+.gauge{width:280px;height:200px}
+.big{position:absolute;top:96px;left:0;right:0;text-align:center}
+.big .num{font:700 64px/1 "JetBrains Mono",monospace;letter-spacing:-2px}
+.big .unit{font-size:22px;color:var(--dim);vertical-align:top;margin-left:2px}
+.big .set{color:var(--set);font-size:14px;margin-top:6px}
+.trend{margin-top:4px;color:var(--dim);font-size:13px;text-align:center;min-height:20px}
+.trend b{color:var(--text)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.chip{display:flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);color:var(--faint);font-size:12.5px;font-weight:600;transition:all .3s}
+.chip i{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.5}
+.chip.on{color:var(--ember2);border-color:#5a3a22;background:rgba(255,122,47,.09)}
+.chip.on i{opacity:1;box-shadow:0 0 10px currentColor}
+.chip.on.pulse i{animation:pulse 1s infinite alternate}
+@keyframes pulse{to{transform:scale(1.5)}}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tile{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:84px}
+.tile .k{color:var(--dim);font-size:12px;font-weight:500}
+.tile .v{font:700 24px/1.2 "JetBrains Mono",monospace;margin-top:4px;white-space:nowrap}
+.tile .h{color:var(--faint);font-size:12px;margin-top:2px}
+.bar{height:6px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--ember),var(--ember2));width:0;transition:width .6s}
+.right{display:flex;flex-direction:column;gap:12px}
+.errors{display:none;background:rgba(255,90,90,.1);border:1px solid #6b2a2a;color:#ffb4b4;border-radius:12px;padding:10px 14px;font-weight:600}
+.chart-card{margin-top:16px}
+.chart-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.chart-head h2{font-size:14px;margin:0;font-weight:600}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--dim);font-size:12px}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:14px;height:3px;border-radius:2px;display:inline-block}
+.ranges{margin-left:auto;display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:9px;border:1px solid var(--line)}
+.ranges button{background:none;border:0;color:var(--dim);font:600 12px Inter,sans-serif;padding:5px 10px;border-radius:6px;cursor:pointer}
+.ranges button.sel{background:var(--panel2);color:var(--text)}
+#chart{width:100%;height:300px;display:block}
+#chart text{fill:var(--faint);font:11px "JetBrains Mono",monospace}
+.probes{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.probe{border-left:3px solid var(--line)}
+.probe.na{opacity:.45}
+.probe .v{font:700 28px/1.2 "JetBrains Mono",monospace}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;min-height:30px}
+.sec-head h2{font-size:14px;margin:0;font-weight:600}
+.acts{margin-left:auto;display:flex;gap:6px}
+.acts button{font:600 12px Inter,sans-serif;padding:6px 11px;border-radius:8px;border:1px solid #5a3a22;background:rgba(255,122,47,.12);color:var(--ember2);cursor:pointer}
+.acts button.ghost{background:none;border-color:var(--line);color:var(--dim)}
+.two .tile .v{font-size:21px}
+.lidnow{color:#ffb4b4;font-weight:600}
+.foot{margin-top:16px;color:var(--faint);font-size:12px;display:flex;gap:18px;flex-wrap:wrap}
+.foot b{color:var(--dim);font-weight:500}
+@media (max-width:1000px){.two{grid-template-columns:1fr}}
+@media (max-width:860px){.grid-top{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(2,1fr)}.probes{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🔥 Grill Live</h1>
+    <span class="sub" id="devname">Pit Boss</span>
+    <div class="live"><span class="dot" id="dot"></span><span id="livetxt">Connecting…</span></div>
+  </header>
+
+  <div class="grid-top">
+    <div class="card hero">
+      <svg class="gauge" viewBox="0 0 280 200" id="gauge"></svg>
+      <div class="big">
+        <div><span class="num" id="gtemp">--</span><span class="unit" id="unit">°F</span></div>
+        <div class="set" id="gset">Set --</div>
+      </div>
+      <div class="trend" id="trend"></div>
+      <div class="chips">
+        <div class="chip" id="c-fan"><i></i>Fan</div>
+        <div class="chip pulse" id="c-auger"><i></i>Auger</div>
+        <div class="chip pulse" id="c-igniter"><i></i>Igniter</div>
+        <div class="chip" id="c-light"><i></i>Light</div>
+        <div class="chip" id="c-prime"><i></i>Prime</div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="errors" id="errors"></div>
+      <div class="tiles">
+        <div class="tile"><div class="k">Cook time</div><div class="v" id="t-cook">--</div><div class="h" id="t-cook-h">since power on</div></div>
+        <div class="tile"><div class="k">Preheat</div><div class="v" id="t-pre">--</div><div class="h" id="t-pre-h">power on → set temp</div></div>
+        <div class="tile"><div class="k">Peak temp</div><div class="v" id="t-peak">--</div><div class="h">this cook</div></div>
+        <div class="tile"><div class="k">Auger duty · 5 min</div><div class="v" id="t-d5">--</div><div class="bar"><div id="b-d5"></div></div></div>
+        <div class="tile"><div class="k">Auger duty · 15 min</div><div class="v" id="t-d15">--</div><div class="bar"><div id="b-d15"></div></div></div>
+        <div class="tile"><div class="k">Auger run time</div><div class="v" id="t-aon">--</div><div class="h">feeding pellets this cook</div></div>
+        <div class="tile"><div class="k">Holding accuracy</div><div class="v" id="t-hold">--</div><div class="h" id="t-hold-h">avg off set temp, last 15 min</div></div>
+        <div class="tile"><div class="k">Heat rate</div><div class="v" id="t-rate">--</div><div class="h">last 2½ min</div></div>
+        <div class="tile"><div class="k">Time in zone</div><div class="v" id="t-zone">--</div><div class="h">within ±10° since reaching set</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card chart-card">
+    <div class="chart-head">
+      <h2>Temperature</h2>
+      <div class="legend">
+        <span><i style="background:var(--ember)"></i>Grill</span>
+        <span><i style="background:var(--set)"></i>Set</span>
+        <span><i style="background:var(--p1)"></i>P1</span>
+        <span><i style="background:var(--p2)"></i>P2</span>
+        <span><i style="background:var(--ember2);height:8px;width:8px;opacity:.6"></i>Auger feeding</span>
+      </div>
+      <div class="ranges" id="ranges">
+        <button data-r="900">15m</button><button data-r="3600" class="sel">1h</button><button data-r="14400">4h</button><button data-r="0">All</button>
+      </div>
+    </div>
+    <svg id="chart"></svg>
+  </div>
+
+  <div class="probes" id="probes"></div>
+
+  <div class="two">
+    <div class="card">
+      <div class="sec-head"><h2>Pellets &amp; rhythm</h2><div class="acts"><button id="btn-fill">Filled hopper</button><button id="btn-cal" class="ghost">Calibrate</button></div></div>
+      <div class="tiles">
+        <div class="tile"><div class="k">Hopper left</div><div class="v" id="h-left">--</div><div class="bar"><div id="b-hop"></div></div><div class="h" id="h-left-h">tap Filled hopper</div></div>
+        <div class="tile"><div class="k">Runs out in</div><div class="v" id="h-empty">--</div><div class="h" id="h-empty-h">at the current burn</div></div>
+        <div class="tile"><div class="k">Burn rate</div><div class="v" id="p-rate">--</div><div class="h">lb per hour, last 15 min</div></div>
+        <div class="tile"><div class="k">Pellets this cook</div><div class="v" id="p-cook">--</div><div class="h" id="p-cook-h">estimate</div></div>
+        <div class="tile"><div class="k">Auger rhythm</div><div class="v" id="r-rh">--</div><div class="h" id="r-rh-h">feed length / feed every</div></div>
+        <div class="tile"><div class="k">Lid opens</div><div class="v" id="l-count">--</div><div class="h" id="l-count-h">detected from temp drops</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-head"><h2>Nerd stats</h2></div>
+      <div class="tiles">
+        <div class="tile"><div class="k">Wi-Fi signal</div><div class="v"><span id="n-rssi">--</span> <svg id="n-bars" width="22" height="16" viewBox="0 0 22 16"></svg></div><div class="h" id="n-rssi-h">scans every 10 min</div></div>
+        <div class="tile"><div class="k">Response time</div><div class="v" id="n-rtt">--</div><div class="h" id="n-rtt-h">grill → this PC</div></div>
+        <div class="tile"><div class="k">Link reliability</div><div class="v" id="n-rel">--</div><div class="h" id="n-rel-h">polls answered</div></div>
+        <div class="tile"><div class="k">Free memory</div><div class="v" id="n-ram">--</div><div class="h" id="n-ram-h">ESP32 RAM</div></div>
+        <div class="tile"><div class="k">Readings this cook</div><div class="v" id="n-reads">--</div><div class="h">status refreshes every 4 s</div></div>
+        <div class="tile"><div class="k">Module uptime</div><div class="v" id="t-up">--</div><div class="h">Wi-Fi board boots with the grill</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const PROBE_COLORS = {p1:'var(--p1)',p2:'var(--p2)',p3:'var(--p3)',p4:'var(--p4)'};
+let hist = [], lastT = 0, range = 3600, state = null;
+
+function dur(s){
+  if(s==null) return '--';
+  s = Math.max(0, Math.round(s));
+  const h = Math.floor(s/3600), m = Math.floor(s%3600/60), sec = s%60;
+  return h ? `${h}h ${String(m).padStart(2,'0')}m` : m ? `${m}m ${String(sec).padStart(2,'0')}s` : `${sec}s`;
+}
+
+function arc(cx,cy,r,a0,a1){
+  const p = a => [cx + r*Math.cos(a), cy + r*Math.sin(a)];
+  const [x0,y0] = p(a0), [x1,y1] = p(a1);
+  return `M${x0} ${y0} A${r} ${r} 0 ${a1-a0>Math.PI?1:0} 1 ${x1} ${y1}`;
+}
+
+function drawGauge(g, s){
+  const min=100, max=550, a0=Math.PI*0.8, a1=Math.PI*2.2;
+  const ang = v => a0 + (Math.min(max,Math.max(min,v))-min)/(max-min)*(a1-a0);
+  let svg = `<defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#ffb15c"/><stop offset="1" stop-color="#ff4d1f"/></linearGradient></defs>`;
+  svg += `<path d="${arc(140,130,110,a0,a1)}" stroke="#352d27" stroke-width="14" fill="none" stroke-linecap="round"/>`;
+  if(g!=null) svg += `<path d="${arc(140,130,110,a0,ang(g))}" stroke="url(#gg)" stroke-width="14" fill="none" stroke-linecap="round" style="filter:drop-shadow(0 0 6px rgba(255,122,47,.55))"/>`;
+  if(s){
+    const a = ang(s), x0=140+96*Math.cos(a), y0=130+96*Math.sin(a), x1=140+124*Math.cos(a), y1=130+124*Math.sin(a);
+    svg += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="#8fb6ff" stroke-width="3" stroke-linecap="round"/>`;
+  }
+  for(const v of [150,250,350,450,550]){
+    const a = ang(v);
+    svg += `<text x="${140+84*Math.cos(a)}" y="${130+84*Math.sin(a)+4}" fill="#6f625a" font-size="10" font-family="JetBrains Mono" text-anchor="middle">${v}</text>`;
+  }
+  $('gauge').innerHTML = svg;
+}
+
+function drawChart(){
+  const el = $('chart'), W = el.clientWidth, H = el.clientHeight;
+  const now = state ? state.now : Date.now()/1000;
+  const rows = range ? hist.filter(r => r.t >= now - range) : hist;
+  if(rows.length < 2){ el.innerHTML = `<text x="${W/2}" y="${H/2}" text-anchor="middle">Collecting data…</text>`; return; }
+  const L=42, R=12, T=10, B=40;
+  const t0 = Math.min(now - 60, range ? Math.max(now - range, rows[0].t) : rows[0].t), t1 = now;
+  const vals = [];
+  for(const r of rows) for(const k of ['grill','set','p1','p2','p3','p4']) if(r[k]!=null) vals.push(r[k]);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  lo = Math.floor((lo-10)/50)*50; hi = Math.ceil((hi+10)/50)*50;
+  const x = t => L + (t-t0)/(t1-t0)*(W-L-R), y = v => T + (1-(v-lo)/(hi-lo))*(H-T-B);
+  let svg = '';
+  for(let v=lo; v<=hi; v+=50) svg += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#2a2420"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${v}</text>`;
+  const span = t1-t0, step = span>7200?3600:span>1800?600:span>600?300:60;
+  for(let t=Math.ceil(t0/step)*step; t<=t1; t+=step){
+    const d = new Date(t*1000);
+    svg += `<text x="${x(t)}" y="${H-B+16}" text-anchor="middle">${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}</text>`;
+  }
+  const stripY = H-14;
+  let run = null;
+  const flush = (end) => { if(run!=null) svg += `<rect x="${x(run)}" y="${stripY}" width="${Math.max(1.5,x(end)-x(run))}" height="8" rx="2" fill="#ffb15c" opacity=".6"/>`; run=null; };
+  for(let i=0;i<rows.length;i++){ const r=rows[i]; if(r.auger && run==null) run=r.t; if(!r.auger && run!=null) flush(r.t); }
+  flush(rows[rows.length-1].t);
+  svg += `<line x1="${L}" x2="${W-R}" y1="${stripY+4}" y2="${stripY+4}" stroke="#2a2420"/>`;
+  const line = (k, color, extra='') => {
+    let d='', pen=false, prev=null;
+    for(const r of rows){
+      if(r[k]==null || (prev && r.t-prev>30)){ pen=false; }
+      if(r[k]!=null){ d += (pen?'L':'M') + x(r.t).toFixed(1) + ' ' + y(r[k]).toFixed(1); pen=true; }
+      prev = r.t;
+    }
+    if(d) svg += `<path d="${d}" fill="none" stroke="${color}" ${extra}/>`;
+  };
+  line('set','#8fb6ff','stroke-width="1.5" stroke-dasharray="5 4"');
+  for(const k of ['p1','p2','p3','p4']) line(k, getComputedStyle(document.documentElement).getPropertyValue('--'+k), 'stroke-width="2"');
+  const last = rows[rows.length-1];
+  let area = '';
+  { let d='',first=null,lastx=null; for(const r of rows) if(r.grill!=null){ const X=x(r.t).toFixed(1); d += (first==null?'M':'L')+X+' '+y(r.grill).toFixed(1); if(first==null) first=X; lastx=X; }
+    if(d) area = `<path d="${d} L${lastx} ${H-B} L${first} ${H-B}Z" fill="url(#ga)"/>`; }
+  svg = `<defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a2f" stop-opacity=".25"/><stop offset="1" stop-color="#ff7a2f" stop-opacity="0"/></linearGradient></defs>` + svg + area;
+  line('grill','#ff7a2f','stroke-width="2.5" stroke-linejoin="round" style="filter:drop-shadow(0 0 4px rgba(255,122,47,.5))"');
+  if(last.grill!=null) svg += `<circle cx="${x(last.t)}" cy="${y(last.grill)}" r="4" fill="#ff7a2f" stroke="#141110" stroke-width="2"/>`;
+  el.innerHTML = svg;
+}
+
+function render(){
+  if(!state) return;
+  const s = state.sample || {}, d = state.derived || {}, u = state.fahrenheit ? '°F' : '°C';
+  const fresh = state.now - state.lastOk < 10;
+  $('dot').className = 'dot ' + (fresh ? 'on' : 'off');
+  $('livetxt').textContent = fresh ? (state.demo ? 'Demo · simulated cook' : s.on ? 'Live · grill on' : 'Live · grill off') : (state.error ? 'Grill not answering' : 'Waiting…');
+  if(state.info){
+    $('devname').textContent = state.info.id || 'Pit Boss';
+    $('t-up').textContent = dur(state.info.uptime);
+    $('foot').innerHTML = `<span><b>Wi-Fi firmware</b> ${state.info.pbFirmware} (${state.info.fw_id})</span><span><b>Control board</b> ${state.info.board}${state.info.known ? (state.info.tested ? '' : ' (untested, see /api/raw)') : ' (unknown board, see /api/raw)'}</span><span><b>Mongoose OS</b> ${state.info.mg_version}</span><span><b>Chip</b> ${state.info.arch}</span><span><b>Network</b> ${state.info.ssid}</span>`;
+  }
+  $('unit').textContent = u;
+  $('gtemp').textContent = s.grill ?? '--';
+  $('gset').textContent = s.set ? `Set ${s.set}${u}` : 'Set --';
+  drawGauge(s.grill, s.set);
+  let tr = '';
+  if(d.heatRate!=null){
+    const arrow = d.heatRate > 0.5 ? '▲' : d.heatRate < -0.5 ? '▼' : '●';
+    tr = `<b>${arrow} ${d.heatRate>0?'+':''}${d.heatRate}${u}/min</b>`;
+    if(d.etaSet) tr += ` · set temp in ~${dur(d.etaSet)}`;
+    else if(s.grill!=null && s.set && Math.abs(s.grill-s.set)<=8) tr += ' · holding at set temp';
+  }
+  if(d.lid && d.lid.openNow) tr += ' · <span class="lidnow">lid open?</span>';
+  $('trend').innerHTML = tr;
+  for(const k of ['fan','auger','igniter','light','prime']) $('c-'+k).classList.toggle('on', !!s[k]);
+  const errs = s.errors || [];
+  $('errors').style.display = errs.length ? 'block' : 'none';
+  $('errors').textContent = '⚠ ' + errs.join(' · ');
+  $('t-cook').textContent = dur(d.cookSeconds);
+  $('t-cook-h').textContent = d.cookStart ? 'since ' + new Date(d.cookStart*1000).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : 'grill off';
+  $('t-pre').textContent = d.preheatSeconds!=null ? dur(d.preheatSeconds) : (s.on ? 'heating' : '--');
+  $('t-peak').textContent = d.peak!=null ? d.peak + u : '--';
+  for(const [k,v] of [['d5',d.augerDuty5],['d15',d.augerDuty15]]){ $('t-'+k).textContent = v!=null ? v+'%' : '--'; $('b-'+k).style.width = (v||0)+'%'; }
+  $('t-aon').textContent = d.augerOnSeconds!=null ? dur(d.augerOnSeconds) : '--';
+  $('t-hold').textContent = d.holdAvgDev!=null ? '±' + d.holdAvgDev + u : '--';
+  const sgn = v => (v > 0 ? '+' : '') + v;
+  $('t-hold-h').textContent = d.holdSwing ? `swing ${sgn(d.holdSwing[0])} to ${sgn(d.holdSwing[1])}${u}, last 15 min` : 'starts once set temp is reached';
+  $('t-rate').textContent = d.heatRate!=null ? (d.heatRate>0?'+':'') + d.heatRate + u + '/m' : '--';
+  $('t-zone').textContent = d.inZone!=null ? d.inZone + '%' : '--';
+  renderExtras(s, d, u);
+  const pr = d.probes || {};
+  $('probes').innerHTML = ['p1','p2','p3','p4'].map((k,i) => {
+    const v = s[k], tgt = i<2 ? s[k+'Target'] : null, info = pr[k] || {};
+    if(v==null) return `<div class="card probe na" style="border-left-color:${PROBE_COLORS[k]}"><div class="tile k" style="border:0;padding:0;min-height:0">Probe ${i+1}</div><div class="v" style="color:var(--faint)">--</div><div class="h" style="color:var(--faint);font-size:12px">not plugged in</div></div>`;
+    let h = tgt ? `target ${tgt}${u}` : 'no target';
+    if(info.rate!=null) h += ` · ${info.rate>0?'+':''}${info.rate}${u}/min`;
+    if(info.eta) h += ` · done in ~${dur(info.eta)}`;
+    return `<div class="card probe" style="border-left-color:${PROBE_COLORS[k]}"><div style="color:var(--dim);font-size:12px">Probe ${i+1}</div><div class="v">${v}${u}</div><div style="color:var(--faint);font-size:12px">${h}</div></div>`;
+  }).join('');
+  drawChart();
+}
+
+function renderExtras(s, d, u){
+  const hop = d.hopper;
+  if(hop){
+    $('h-left').textContent = hop.left + ' lb';
+    $('b-hop').style.width = Math.min(100, hop.left / hop.filled * 100) + '%';
+    $('h-left-h').textContent = `of ${hop.filled} lb filled ${new Date(hop.at*1000).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'})}`;
+    $('h-empty').textContent = hop.emptyIn!=null ? dur(hop.emptyIn) : '--';
+    $('h-empty-h').textContent = hop.emptyIn!=null ? 'around ' + new Date((state.now + hop.emptyIn)*1000).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : 'needs the grill running';
+  } else {
+    $('h-left').textContent = '--'; $('b-hop').style.width = '0';
+    $('h-left-h').textContent = 'tap Filled hopper'; $('h-empty').textContent = '--';
+  }
+  $('p-rate').textContent = d.burnRate!=null ? d.burnRate + ' lb/h' : '--';
+  $('p-cook').textContent = d.pelletsCook!=null ? '≈' + d.pelletsCook + ' lb' : '--';
+  $('p-cook-h').textContent = `estimate · ${d.lbPerAugerHour} lb per auger-hour`;
+  const rh = d.rhythm;
+  $('r-rh').textContent = rh ? `${Math.round(rh.on)}s / ${Math.round(rh.every)}s` : '--';
+  $('r-rh-h').textContent = rh ? `${rh.perMin} feeds/min · ${rh.count} in 15 min` : 'feed length / feed every';
+  const lid = d.lid;
+  $('l-count').textContent = lid ? lid.count : '--';
+  $('l-count-h').textContent = lid && lid.last ? `last: −${lid.last.drop}${u}, back in ${dur(lid.last.recovery)}` : 'detected from temp drops';
+  const w = d.wifi || {};
+  $('n-rssi').textContent = w.rssi!=null ? w.rssi + ' dBm' : '--';
+  const lvl = w.rssi==null ? 0 : w.rssi >= -55 ? 4 : w.rssi >= -65 ? 3 : w.rssi >= -75 ? 2 : 1;
+  $('n-bars').innerHTML = [0,1,2,3].map(i => `<rect x="${i*6}" y="${12-i*4}" width="4" height="${4+i*4}" rx="1" fill="${i<lvl?'#5fd38d':'#352d27'}"/>`).join('');
+  $('n-rssi-h').textContent = w.rssi!=null ? `${['','weak','fair','good','excellent'][lvl]} · ${w.name || w.bssid} · ch ${w.channel} · ${w.seen} networks seen` : 'first scan pending';
+  const L = d.link || {};
+  $('n-rtt').textContent = L.rttAvg!=null ? L.rttAvg + ' ms' : '--';
+  $('n-rtt-h').textContent = L.rttP95!=null ? `95% under ${L.rttP95} ms` : 'grill → this PC';
+  $('n-rel').textContent = L.reliability!=null ? L.reliability + '%' : '--';
+  $('n-rel-h').textContent = L.polls ? `${L.polls.toLocaleString()} polls answered` : 'polls answered';
+  const inf = state.info;
+  if(inf){
+    $('n-ram').textContent = Math.round(inf.ram_free/1024) + ' KB';
+    $('n-ram-h').textContent = `low point ${Math.round(inf.ram_min_free/1024)} KB · of ${Math.round(inf.ram_size/1024)} KB`;
+  }
+  $('n-reads').textContent = d.readings!=null ? d.readings.toLocaleString() : '--';
+}
+
+async function postSettings(body){
+  await fetch('/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  tick();
+}
+$('btn-fill').addEventListener('click', () => {
+  const v = prompt('How many pounds of pellets are in the hopper now? (0 clears it)', '20');
+  if(v!==null && !isNaN(parseFloat(v))) postSettings({hopperLbs: parseFloat(v)});
+});
+$('btn-cal').addEventListener('click', () => {
+  const cur = state && state.derived ? state.derived.lbPerAugerHour : 4;
+  const v = prompt(`Pounds of pellets the auger moves per hour of running (now ${cur}).\nTo calibrate: after a cook, pounds used ÷ auger run time in hours.`, cur);
+  if(v!==null && !isNaN(parseFloat(v))) postSettings({lbPerAugerHour: parseFloat(v)});
+});
+
+async function tick(){
+  try{
+    const [st, rows] = await Promise.all([
+      fetch('/api/state').then(r => r.json()),
+      fetch('/api/history?since=' + lastT).then(r => r.json())
+    ]);
+    state = st;
+    if(rows.length){ hist.push(...rows); lastT = rows[rows.length-1].t; }
+    render();
+  }catch(e){
+    $('dot').className = 'dot off'; $('livetxt').textContent = 'Dashboard server stopped';
+  }
+}
+
+$('ranges').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  range = +b.dataset.r;
+  document.querySelectorAll('#ranges button').forEach(x => x.classList.toggle('sel', x===b));
+  drawChart();
+});
+new ResizeObserver(() => drawChart()).observe($('chart'));
+tick(); setInterval(tick, 2000);
+</script>
+</body>
+</html>
