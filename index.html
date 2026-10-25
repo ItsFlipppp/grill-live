@@ -517,7 +517,7 @@ function renderExtras(s, d, u){
   $('n-rssi').textContent = w.rssi!=null ? w.rssi + ' dBm' : '--';
   const lvl = w.rssi==null ? 0 : w.rssi >= -55 ? 4 : w.rssi >= -65 ? 3 : w.rssi >= -75 ? 2 : 1;
   $('n-bars').innerHTML = [0,1,2,3].map(i => `<rect x="${i*6}" y="${12-i*4}" width="4" height="${4+i*4}" rx="1" fill="${i<lvl?C('ok'):C('line')}"/>`).join('');
-  $('n-rssi-h').textContent = w.rssi!=null ? `${['','weak','fair','good','excellent'][lvl]} · ${w.name || w.bssid} · ch ${w.channel} · ${w.seen} networks seen` : 'first scan pending';
+  $('n-rssi-h').textContent = w.rssi!=null ? `${['','weak','fair','good','excellent'][lvl]}${w.name ? ' · ' + w.name : ''}` : 'first scan pending';
   const L = d.link || {};
   $('n-rtt').textContent = L.rttAvg!=null ? L.rttAvg + ' ms' : '--';
   $('n-rtt-h').textContent = L.rttP95!=null ? `95% under ${L.rttP95} ms` : 'grill → this PC';
