@@ -328,8 +328,8 @@ function drawChart(){
 function render(){
   if(!state) return;
   const s = state.sample || {}, d = state.derived || {}, u = state.fahrenheit ? '°F' : '°C';
-  const onThisPc = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
-  $('phone-btn').hidden = !(state.phoneUrl && onThisPc);
+  const onPhone = matchMedia('(hover: none) and (pointer: coarse)').matches;
+  $('phone-btn').hidden = !state.phoneUrl || onPhone;
   const fresh = state.now - state.lastOk < 10;
   $('dot').className = 'dot ' + (fresh ? 'on' : 'off');
   $('livetxt').textContent = fresh ? (state.demo ? 'Demo · simulated cook' : s.on ? 'Live · grill on' : 'Live · grill off') : (state.error ? 'Grill not answering' : 'Waiting…');
