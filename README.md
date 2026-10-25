@@ -26,7 +26,7 @@
 You need Python 3.8 or newer. There's nothing else to install.
 
 ```bash
-git clone https://github.com/<you>/pitboss-live.git
+git clone https://github.com/ItsFlipppp/pitboss-live.git
 cd pitboss-live
 python server.py
 ```
