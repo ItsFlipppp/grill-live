@@ -500,7 +500,7 @@ def derived():
     rate = slope_per_min(win(150), "grill")
     out["heatRate"] = None if rate is None else round(rate, 1)
     g, s = cur.get("grill"), cur.get("set")
-    if g is not None and s and rate and abs(s - g) > 3 and (s - g) * rate > 0:
+    if g is not None and s and rate and abs(rate) >= 0.5 and abs(s - g) > 3 and (s - g) * rate > 0:
         out["etaSet"] = round((s - g) / rate * 60)
 
     reached = None
@@ -677,8 +677,7 @@ def main():
                 print("  Scan this with your phone's camera:\n", flush=True)
                 print(qr.to_terminal(cfg["phoneUrl"]) + "\n", flush=True)
             except UnicodeEncodeError:
-                print("  (Open the dashboard on this computer and tap 📱 for a QR code.)\n".encode(
-                    sys.stdout.encoding or "ascii", "replace").decode(sys.stdout.encoding or "ascii"), flush=True)
+                print("  (Open the dashboard on this computer and tap Open on phone for a QR code.)\n", flush=True)
     server.serve_forever()
 
 

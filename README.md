@@ -17,9 +17,16 @@
 - **Auger rhythm:** how long each feed lasts and how often it comes, plus duty over the last 5 and 15 minutes
 - **Lid-open detection:** each sudden drop at a steady set temp, how far it fell and how long it took to recover
 - **Nerd stats:** the grill's Wi-Fi signal (dBm) and which access point it's on, response time, link reliability and ESP32 free memory
+- **Themes:** Ember, Daylight (high contrast for bright sun), Midnight, Hickory and Smoke, or match your phone's light or dark mode. Each phone remembers its own pick
 - **Logging:** every reading goes to a daily CSV in `logs/`, so each cook is kept
 
 <img src="docs/phone.png" alt="Grill Live on a phone" width="300">
+
+### Themes
+
+Pick one from the **Theme** menu in the top corner: Ember, Daylight, Midnight, Hickory or Smoke. **Match system** follows your device's light or dark mode.
+
+![Ember, Daylight, Midnight, Hickory and Smoke themes](docs/themes.png)
 
 ## Quick start
 
@@ -33,7 +40,7 @@ python server.py
 
 Switch the grill on first. With no address given, Grill Live searches your network for the grill (one quick request per address) and remembers it for next time.
 
-**📱 On your phone:** scan the QR code that appears in the terminal with your phone's camera. On your computer, open **http://localhost:8880** and tap **📱 Open on phone** for the same code. Your phone just needs to be on the same Wi-Fi. Once it's open, use **Add to Home Screen** to keep it one tap away.
+**On your phone:** scan the QR code that appears in the terminal with your phone's camera. On your computer, open **http://localhost:8880** and tap **Open on phone** for the same code. Your phone just needs to be on the same Wi-Fi. Once it's open, use **Add to Home Screen** to keep it one tap away.
 
 > The first time you run it, Windows or macOS may ask whether Python can accept connections on your network. Click **Allow** (private networks), or your phone won't be able to connect.
 

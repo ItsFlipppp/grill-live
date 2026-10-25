@@ -9,25 +9,70 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Grill Live">
+<script>
+try {
+  const pick = new URLSearchParams(location.search).get('theme') || localStorage.getItem('grill-theme') || 'ember';
+  document.documentElement.dataset.theme = pick === 'auto' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'daylight' : 'ember') : pick;
+} catch (e) {}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#141110;--panel:#1d1917;--panel2:#252019;--line:#352d27;--text:#f3ebe4;--dim:#a39488;--faint:#6f625a;
-  --ember:#ff7a2f;--ember2:#ffb15c;--set:#8fb6ff;--ok:#5fd38d;--bad:#ff5a5a;
-  --p1:#ffd166;--p2:#c792ea;--p3:#5ee0d0;--p4:#f78fb3;
+:root,[data-theme="ember"]{
+  --bg:#141110;--glow:#2a1a10;--panel:#1d1917;--panel2:#252019;--line:#352d27;--grid:#2a2420;--text:#f3ebe4;--dim:#a39488;--faint:#6f625a;
+  --ember:#ff7a2f;--ember2:#ffb15c;--ember3:#ff4d1f;--ember-rgb:255,122,47;--ember-line:#5a3a22;--on-text:#ffb15c;
+  --set:#8fb6ff;--ok:#5fd38d;--ok-rgb:95,211,141;--bad:#ff5a5a;--bad-rgb:255,90,90;--bad-line:#6b2a2a;--bad-text:#ffb4b4;
+  --p1:#ffd166;--p2:#c792ea;--p3:#5ee0d0;--p4:#f78fb3;--tile:rgba(255,255,255,.02);--scrim:rgba(10,8,7,.72);color-scheme:dark;
 }
+[data-theme="daylight"]{
+  --bg:#f5f1eb;--glow:#ffe6cf;--panel:#fbf7f1;--panel2:#fffdfa;--line:#e6ddd2;--grid:#efe8df;--text:#1d1915;--dim:#5c5149;--faint:#8e8278;
+  --ember:#e8590c;--ember2:#f59f00;--ember3:#d9480f;--ember-rgb:232,89,12;--ember-line:#f2c4a2;--on-text:#c2410c;
+  --set:#1c7ed6;--ok:#2f9e44;--ok-rgb:47,158,68;--bad:#e03131;--bad-rgb:224,49,49;--bad-line:#f1b5b5;--bad-text:#b42318;
+  --p1:#b8860b;--p2:#7048e8;--p3:#0c8599;--p4:#d6336c;--tile:rgba(60,40,20,.025);--scrim:rgba(40,30,20,.35);color-scheme:light;
+}
+[data-theme="midnight"]{
+  --bg:#0a0f1e;--glow:#13234d;--panel:#10172d;--panel2:#151d38;--line:#263152;--grid:#1a2442;--text:#e7ecff;--dim:#9ba7cb;--faint:#5f6b93;
+  --ember:#4cc9f0;--ember2:#90e0ef;--ember3:#4361ee;--ember-rgb:76,201,240;--ember-line:#1f4d6e;--on-text:#90e0ef;
+  --set:#f7b267;--ok:#6ee7b7;--ok-rgb:110,231,183;--bad:#ff6b6b;--bad-rgb:255,107,107;--bad-line:#6b2737;--bad-text:#ffb3b3;
+  --p1:#ffd166;--p2:#c792ea;--p3:#f78fb3;--p4:#a3e635;--tile:rgba(255,255,255,.02);--scrim:rgba(5,8,18,.72);color-scheme:dark;
+}
+[data-theme="hickory"]{
+  --bg:#1a120c;--glow:#3d2512;--panel:#231911;--panel2:#2c2016;--line:#45321f;--grid:#34261a;--text:#f6ead8;--dim:#c4aa89;--faint:#8b7457;
+  --ember:#e9a23b;--ember2:#f6c56f;--ember3:#c8553d;--ember-rgb:233,162,59;--ember-line:#6e4c22;--on-text:#f6c56f;
+  --set:#9cc5a1;--ok:#8fd694;--ok-rgb:143,214,148;--bad:#ef6f5e;--bad-rgb:239,111,94;--bad-line:#6e2b22;--bad-text:#ffb8ab;
+  --p1:#f28482;--p2:#a0c4ff;--p3:#84dcc6;--p4:#cdb4db;--tile:rgba(255,240,220,.02);--scrim:rgba(15,10,6,.72);color-scheme:dark;
+}
+[data-theme="smoke"]{
+  --bg:#101113;--glow:#1f2226;--panel:#17181b;--panel2:#1e2024;--line:#2f3237;--grid:#24272b;--text:#ededed;--dim:#a1a5ac;--faint:#6a6f77;
+  --ember:#ef4444;--ember2:#f87171;--ember3:#b91c1c;--ember-rgb:239,68,68;--ember-line:#5c2525;--on-text:#fca5a5;
+  --set:#93c5fd;--ok:#4ade80;--ok-rgb:74,222,128;--bad:#fbbf24;--bad-rgb:251,191,36;--bad-line:#5e4a17;--bad-text:#fde68a;
+  --p1:#fde047;--p2:#c4b5fd;--p3:#5eead4;--p4:#f9a8d4;--tile:rgba(255,255,255,.02);--scrim:rgba(8,8,10,.72);color-scheme:dark;
+}
+.theme-wrap{position:relative}
+.theme-btn{display:flex;align-items:center;gap:8px;font:600 12.5px Inter,sans-serif;padding:6px 12px 6px 7px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--dim);cursor:pointer}
+.theme-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:20;min-width:210px;padding:6px;border-radius:14px;border:1px solid var(--line);background:var(--panel2);box-shadow:0 14px 36px rgba(0,0,0,.35)}
+.theme-menu[hidden]{display:none}
+.theme-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;border-radius:9px;background:none;color:var(--text);font:500 13px Inter,sans-serif;cursor:pointer;text-align:left}
+.theme-menu button:hover{background:rgba(var(--ember-rgb),.08)}
+.theme-menu button.sel{background:rgba(var(--ember-rgb),.14)}
+.theme-menu button.sel::after{content:"✓";margin-left:auto;color:var(--on-text);font-weight:700}
+.sw{display:inline-flex;align-items:center;justify-content:center;gap:3px;width:34px;height:20px;border-radius:6px;background:var(--bg);border:1px solid var(--line);flex:none}
+.sw i{width:6px;height:6px;border-radius:50%;background:var(--ember)}
+.sw i:nth-child(2){background:var(--set)}
+.sw i:nth-child(3){background:var(--text)}
+.sw.auto{background:linear-gradient(135deg,#141110 50%,#f5f1eb 50%);border-color:var(--line)}
+.sw.auto i{display:none}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,#2a1a10 0%,var(--bg) 60%) fixed,var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,sans-serif}
+body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,var(--glow) 0%,var(--bg) 60%) fixed,var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,sans-serif}
 .wrap{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
 header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 header h1{font-size:18px;font-weight:700;margin:0;letter-spacing:.2px}
 header .sub{color:var(--dim);font-size:13px}
 .live{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--dim);font-size:13px}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--faint)}
-.dot.on{background:var(--ok);box-shadow:0 0 0 0 rgba(95,211,141,.6);animation:ping 2s infinite}
+.dot.on{background:var(--ok);box-shadow:0 0 0 0 rgba(var(--ok-rgb),.6);animation:ping 2s infinite}
 .dot.off{background:var(--bad)}
-@keyframes ping{70%{box-shadow:0 0 0 8px rgba(95,211,141,0)}100%{box-shadow:0 0 0 0 rgba(95,211,141,0)}}
+@keyframes ping{70%{box-shadow:0 0 0 8px rgba(var(--ok-rgb),0)}100%{box-shadow:0 0 0 0 rgba(var(--ok-rgb),0)}}
 .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:16px}
 .grid-top{display:grid;grid-template-columns:340px 1fr;gap:16px}
 .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:330px}
@@ -41,19 +86,19 @@ header .sub{color:var(--dim);font-size:13px}
 .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px}
 .chip{display:flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);color:var(--faint);font-size:12.5px;font-weight:600;transition:all .3s}
 .chip i{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.5}
-.chip.on{color:var(--ember2);border-color:#5a3a22;background:rgba(255,122,47,.09)}
+.chip.on{color:var(--on-text);border-color:var(--ember-line);background:rgba(var(--ember-rgb),.09)}
 .chip.on i{opacity:1;box-shadow:0 0 10px currentColor}
 .chip.on.pulse i{animation:pulse 1s infinite alternate}
 @keyframes pulse{to{transform:scale(1.5)}}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.tile{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:84px}
+.tile{background:var(--tile);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:84px}
 .tile .k{color:var(--dim);font-size:12px;font-weight:500}
 .tile .v{font:700 24px/1.2 "JetBrains Mono",monospace;margin-top:4px;white-space:nowrap}
 .tile .h{color:var(--faint);font-size:12px;margin-top:2px}
 .bar{height:6px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden}
 .bar>div{height:100%;background:linear-gradient(90deg,var(--ember),var(--ember2));width:0;transition:width .6s}
 .right{display:flex;flex-direction:column;gap:12px}
-.errors{display:none;background:rgba(255,90,90,.1);border:1px solid #6b2a2a;color:#ffb4b4;border-radius:12px;padding:10px 14px;font-weight:600}
+.errors{display:none;background:rgba(var(--bad-rgb),.1);border:1px solid var(--bad-line);color:var(--bad-text);border-radius:12px;padding:10px 14px;font-weight:600}
 .chart-card{margin-top:16px}
 .chart-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
 .chart-head h2{font-size:14px;margin:0;font-weight:600}
@@ -69,9 +114,9 @@ header .sub{color:var(--dim);font-size:13px}
 .probe{border-left:3px solid var(--line)}
 .probe.na{opacity:.45}
 .probe .v{font:700 28px/1.2 "JetBrains Mono",monospace}
-.phone-btn{font:600 12.5px Inter,sans-serif;padding:7px 12px;border-radius:999px;border:1px solid #5a3a22;background:rgba(255,122,47,.12);color:var(--ember2);cursor:pointer}
+.phone-btn{font:600 12.5px Inter,sans-serif;padding:7px 12px;border-radius:999px;border:1px solid var(--ember-line);background:rgba(var(--ember-rgb),.12);color:var(--on-text);cursor:pointer}
 .phone-btn[hidden]{display:none}
-.modal{position:fixed;inset:0;background:rgba(10,8,7,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal{position:fixed;inset:0;background:var(--scrim);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
 .modal[hidden]{display:none}
 .modal-card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:18px;padding:22px;max-width:340px;width:100%;text-align:center}
 .modal-card h2{margin:0 0 4px;font-size:18px}
@@ -85,10 +130,10 @@ header .sub{color:var(--dim);font-size:13px}
 .sec-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;min-height:30px}
 .sec-head h2{font-size:14px;margin:0;font-weight:600}
 .acts{margin-left:auto;display:flex;gap:6px}
-.acts button{font:600 12px Inter,sans-serif;padding:6px 11px;border-radius:8px;border:1px solid #5a3a22;background:rgba(255,122,47,.12);color:var(--ember2);cursor:pointer}
+.acts button{font:600 12px Inter,sans-serif;padding:6px 11px;border-radius:8px;border:1px solid var(--ember-line);background:rgba(var(--ember-rgb),.12);color:var(--on-text);cursor:pointer}
 .acts button.ghost{background:none;border-color:var(--line);color:var(--dim)}
 .two .tile .v{font-size:21px}
-.lidnow{color:#ffb4b4;font-weight:600}
+.lidnow{color:var(--bad-text);font-weight:600}
 .foot{margin-top:16px;color:var(--faint);font-size:12px;display:flex;gap:18px;flex-wrap:wrap}
 .foot b{color:var(--dim);font-weight:500}
 @media (max-width:1000px){.two{grid-template-columns:1fr}}
@@ -101,6 +146,10 @@ header .sub{color:var(--dim);font-size:13px}
     <h1>🔥 Grill Live</h1>
     <span class="sub" id="devname">Pit Boss</span>
     <div class="live"><span class="dot" id="dot"></span><span id="livetxt">Connecting…</span></div>
+    <div class="theme-wrap">
+      <button class="theme-btn" id="theme-btn" aria-haspopup="true"><span class="sw"><i></i><i></i><i></i></span><span id="theme-name">Theme</span></button>
+      <div class="theme-menu" id="theme-menu" hidden></div>
+    </div>
     <button class="phone-btn" id="phone-btn" hidden>📱 Open on phone</button>
   </header>
 
@@ -196,6 +245,7 @@ header .sub{color:var(--dim);font-size:13px}
 
 <script>
 const $ = id => document.getElementById(id);
+const C = name => getComputedStyle(document.documentElement).getPropertyValue('--' + name).trim();
 const PROBE_COLORS = {p1:'var(--p1)',p2:'var(--p2)',p3:'var(--p3)',p4:'var(--p4)'};
 let hist = [], lastT = 0, range = 3600, state = null;
 
@@ -215,16 +265,16 @@ function arc(cx,cy,r,a0,a1){
 function drawGauge(g, s){
   const min=100, max=550, a0=Math.PI*0.8, a1=Math.PI*2.2;
   const ang = v => a0 + (Math.min(max,Math.max(min,v))-min)/(max-min)*(a1-a0);
-  let svg = `<defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#ffb15c"/><stop offset="1" stop-color="#ff4d1f"/></linearGradient></defs>`;
-  svg += `<path d="${arc(140,130,110,a0,a1)}" stroke="#352d27" stroke-width="14" fill="none" stroke-linecap="round"/>`;
-  if(g!=null) svg += `<path d="${arc(140,130,110,a0,ang(g))}" stroke="url(#gg)" stroke-width="14" fill="none" stroke-linecap="round" style="filter:drop-shadow(0 0 6px rgba(255,122,47,.55))"/>`;
+  let svg = `<defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="${C('ember2')}"/><stop offset="1" stop-color="${C('ember3')}"/></linearGradient></defs>`;
+  svg += `<path d="${arc(140,130,110,a0,a1)}" stroke="${C('line')}" stroke-width="14" fill="none" stroke-linecap="round"/>`;
+  if(g!=null) svg += `<path d="${arc(140,130,110,a0,ang(g))}" stroke="url(#gg)" stroke-width="14" fill="none" stroke-linecap="round" style="filter:drop-shadow(0 0 6px rgba(${C('ember-rgb')},.55))"/>`;
   if(s){
     const a = ang(s), x0=140+96*Math.cos(a), y0=130+96*Math.sin(a), x1=140+124*Math.cos(a), y1=130+124*Math.sin(a);
-    svg += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="#8fb6ff" stroke-width="3" stroke-linecap="round"/>`;
+    svg += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="${C('set')}" stroke-width="3" stroke-linecap="round"/>`;
   }
   for(const v of [150,250,350,450,550]){
     const a = ang(v);
-    svg += `<text x="${140+84*Math.cos(a)}" y="${130+84*Math.sin(a)+4}" fill="#6f625a" font-size="10" font-family="JetBrains Mono" text-anchor="middle">${v}</text>`;
+    svg += `<text x="${140+84*Math.cos(a)}" y="${130+84*Math.sin(a)+4}" fill="${C('faint')}" font-size="10" font-family="JetBrains Mono" text-anchor="middle">${v}</text>`;
   }
   $('gauge').innerHTML = svg;
 }
@@ -242,7 +292,7 @@ function drawChart(){
   lo = Math.floor((lo-10)/50)*50; hi = Math.ceil((hi+10)/50)*50;
   const x = t => L + (t-t0)/(t1-t0)*(W-L-R), y = v => T + (1-(v-lo)/(hi-lo))*(H-T-B);
   let svg = '';
-  for(let v=lo; v<=hi; v+=50) svg += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#2a2420"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${v}</text>`;
+  for(let v=lo; v<=hi; v+=50) svg += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${C('grid')}"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${v}</text>`;
   const span = t1-t0, step = span>7200?3600:span>1800?600:span>600?300:60;
   for(let t=Math.ceil(t0/step)*step; t<=t1; t+=step){
     const d = new Date(t*1000);
@@ -250,10 +300,10 @@ function drawChart(){
   }
   const stripY = H-14;
   let run = null;
-  const flush = (end) => { if(run!=null) svg += `<rect x="${x(run)}" y="${stripY}" width="${Math.max(1.5,x(end)-x(run))}" height="8" rx="2" fill="#ffb15c" opacity=".6"/>`; run=null; };
+  const flush = (end) => { if(run!=null) svg += `<rect x="${x(run)}" y="${stripY}" width="${Math.max(1.5,x(end)-x(run))}" height="8" rx="2" fill="${C('ember2')}" opacity=".6"/>`; run=null; };
   for(let i=0;i<rows.length;i++){ const r=rows[i]; if(r.auger && run==null) run=r.t; if(!r.auger && run!=null) flush(r.t); }
   flush(rows[rows.length-1].t);
-  svg += `<line x1="${L}" x2="${W-R}" y1="${stripY+4}" y2="${stripY+4}" stroke="#2a2420"/>`;
+  svg += `<line x1="${L}" x2="${W-R}" y1="${stripY+4}" y2="${stripY+4}" stroke="${C('grid')}"/>`;
   const line = (k, color, extra='') => {
     let d='', pen=false, prev=null;
     for(const r of rows){
@@ -263,15 +313,15 @@ function drawChart(){
     }
     if(d) svg += `<path d="${d}" fill="none" stroke="${color}" ${extra}/>`;
   };
-  line('set','#8fb6ff','stroke-width="1.5" stroke-dasharray="5 4"');
-  for(const k of ['p1','p2','p3','p4']) line(k, getComputedStyle(document.documentElement).getPropertyValue('--'+k), 'stroke-width="2"');
+  line('set',C('set'),'stroke-width="1.5" stroke-dasharray="5 4"');
+  for(const k of ['p1','p2','p3','p4']) line(k, C(k), 'stroke-width="2"');
   const last = rows[rows.length-1];
   let area = '';
   { let d='',first=null,lastx=null; for(const r of rows) if(r.grill!=null){ const X=x(r.t).toFixed(1); d += (first==null?'M':'L')+X+' '+y(r.grill).toFixed(1); if(first==null) first=X; lastx=X; }
     if(d) area = `<path d="${d} L${lastx} ${H-B} L${first} ${H-B}Z" fill="url(#ga)"/>`; }
-  svg = `<defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a2f" stop-opacity=".25"/><stop offset="1" stop-color="#ff7a2f" stop-opacity="0"/></linearGradient></defs>` + svg + area;
-  line('grill','#ff7a2f','stroke-width="2.5" stroke-linejoin="round" style="filter:drop-shadow(0 0 4px rgba(255,122,47,.5))"');
-  if(last.grill!=null) svg += `<circle cx="${x(last.t)}" cy="${y(last.grill)}" r="4" fill="#ff7a2f" stroke="#141110" stroke-width="2"/>`;
+  svg = `<defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${C('ember')}" stop-opacity=".25"/><stop offset="1" stop-color="${C('ember')}" stop-opacity="0"/></linearGradient></defs>` + svg + area;
+  line('grill',C('ember'),`stroke-width="2.5" stroke-linejoin="round" style="filter:drop-shadow(0 0 4px rgba(${C('ember-rgb')},.5))"`);
+  if(last.grill!=null) svg += `<circle cx="${x(last.t)}" cy="${y(last.grill)}" r="4" fill="${C('ember')}" stroke="${C('bg')}" stroke-width="2"/>`;
   el.innerHTML = svg;
 }
 
@@ -353,7 +403,7 @@ function renderExtras(s, d, u){
   const w = d.wifi || {};
   $('n-rssi').textContent = w.rssi!=null ? w.rssi + ' dBm' : '--';
   const lvl = w.rssi==null ? 0 : w.rssi >= -55 ? 4 : w.rssi >= -65 ? 3 : w.rssi >= -75 ? 2 : 1;
-  $('n-bars').innerHTML = [0,1,2,3].map(i => `<rect x="${i*6}" y="${12-i*4}" width="4" height="${4+i*4}" rx="1" fill="${i<lvl?'#5fd38d':'#352d27'}"/>`).join('');
+  $('n-bars').innerHTML = [0,1,2,3].map(i => `<rect x="${i*6}" y="${12-i*4}" width="4" height="${4+i*4}" rx="1" fill="${i<lvl?C('ok'):C('line')}"/>`).join('');
   $('n-rssi-h').textContent = w.rssi!=null ? `${['','weak','fair','good','excellent'][lvl]} · ${w.name || w.bssid} · ch ${w.channel} · ${w.seen} networks seen` : 'first scan pending';
   const L = d.link || {};
   $('n-rtt').textContent = L.rttAvg!=null ? L.rttAvg + ' ms' : '--';
@@ -396,6 +446,32 @@ async function tick(){
   }
 }
 
+const THEMES = [['ember', 'Ember'], ['daylight', 'Daylight'], ['midnight', 'Midnight'], ['hickory', 'Hickory'], ['smoke', 'Smoke'], ['auto', 'Match system']];
+let themeChoice = 'ember';
+try { themeChoice = new URLSearchParams(location.search).get('theme') || localStorage.getItem('grill-theme') || 'ember'; } catch (e) {}
+const systemLight = matchMedia('(prefers-color-scheme: light)');
+
+function applyTheme(choice, save){
+  if(!THEMES.some(t => t[0] === choice)) choice = 'ember';
+  themeChoice = choice;
+  document.documentElement.dataset.theme = choice === 'auto' ? (systemLight.matches ? 'daylight' : 'ember') : choice;
+  if(save){ try { localStorage.setItem('grill-theme', choice); } catch (e) {} }
+  $('theme-name').textContent = THEMES.find(t => t[0] === choice)[1];
+  document.querySelector('meta[name=theme-color]').content = C('bg');
+  $('theme-menu').innerHTML = THEMES.map(([id, label]) =>
+    `<button data-pick="${id}" class="${id === choice ? 'sel' : ''}"><span class="sw${id === 'auto' ? ' auto' : ''}" ${id === 'auto' ? '' : `data-theme="${id}"`}><i></i><i></i><i></i></span>${label}</button>`).join('');
+  if(state) render(); else drawGauge(null, null);
+}
+$('theme-btn').addEventListener('click', e => { e.stopPropagation(); $('theme-menu').hidden = !$('theme-menu').hidden; });
+$('theme-menu').addEventListener('click', e => {
+  const b = e.target.closest('button[data-pick]'); if(!b) return;
+  applyTheme(b.dataset.pick, true);
+  $('theme-menu').hidden = true;
+});
+document.addEventListener('click', e => { if(!e.target.closest('.theme-wrap')) $('theme-menu').hidden = true; });
+systemLight.addEventListener('change', () => { if(themeChoice === 'auto') applyTheme('auto'); });
+applyTheme(themeChoice);
+
 $('phone-btn').addEventListener('click', () => {
   $('phone-qr').src = '/phone.svg';
   $('phone-url').textContent = state.phoneUrl;
@@ -404,7 +480,7 @@ $('phone-btn').addEventListener('click', () => {
 const closePhone = () => { $('phone-modal').hidden = true; };
 $('phone-close').addEventListener('click', closePhone);
 $('phone-modal').addEventListener('click', e => { if(e.target === $('phone-modal')) closePhone(); });
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closePhone(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape'){ closePhone(); $('theme-menu').hidden = true; } });
 
 $('ranges').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return;
