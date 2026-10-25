@@ -462,7 +462,19 @@ function applyTheme(choice, save){
     `<button data-pick="${id}" class="${id === choice ? 'sel' : ''}"><span class="sw${id === 'auto' ? ' auto' : ''}" ${id === 'auto' ? '' : `data-theme="${id}"`}><i></i><i></i><i></i></span>${label}</button>`).join('');
   if(state) render(); else drawGauge(null, null);
 }
-$('theme-btn').addEventListener('click', e => { e.stopPropagation(); $('theme-menu').hidden = !$('theme-menu').hidden; });
+function placeThemeMenu(){
+  const m = $('theme-menu');
+  m.style.left = ''; m.style.right = '0px';
+  const r = m.getBoundingClientRect();
+  if(r.left < 8){ m.style.right = 'auto'; m.style.left = '0px'; }
+  const r2 = m.getBoundingClientRect();
+  if(r2.right > innerWidth - 8) m.style.left = (8 - m.parentElement.getBoundingClientRect().left) + 'px';
+}
+$('theme-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  $('theme-menu').hidden = !$('theme-menu').hidden;
+  if(!$('theme-menu').hidden) placeThemeMenu();
+});
 $('theme-menu').addEventListener('click', e => {
   const b = e.target.closest('button[data-pick]'); if(!b) return;
   applyTheme(b.dataset.pick, true);
