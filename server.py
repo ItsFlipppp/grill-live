@@ -72,6 +72,7 @@ lock = threading.Lock()
 samples = []
 latest = {"sample": None, "info": None, "error": None, "fahrenheit": True, "lastOk": 0, "raw": None}
 link = {"ok": 0, "fail": 0, "rtt": collections.deque(maxlen=150)}
+ram_hist = collections.deque(maxlen=240)
 wifi = {"rssi": None, "bssid": None, "channel": None, "name": None, "seen": None, "at": None}
 settings = {"lbPerAugerHour": 4.0, "augerTotal": 0.0, "hopper": None, "cookBoot": None,
             "grill": None, "apNames": {}}
@@ -265,6 +266,8 @@ def read_info(grill, now):
                                                    "ram_min_free", "ram_size", "arch")}
         latest["info"].update(id=info.get("id"), ssid=(info.get("wifi") or {}).get("ssid"), board=board_id,
                               tested=board_id in TESTED_BOARDS, known=board_id in BOARDS)
+        if info.get("ram_free") is not None:
+            ram_hist.append((round(now), info["ram_free"]))
         try:
             latest["info"]["pbFirmware"] = rpc(grill, "PB.GetFirmwareVersion").get("firmwareVersion")
         except Exception:
@@ -349,6 +352,12 @@ class SimGrill:
     def setpoint(self, t):
         return 275 if t >= self.events["bump"] else 225
 
+    @staticmethod
+    def shown(g, set_):
+        # like the real controller: it reads exactly the set temp while holding near it
+        g = int(round(g))
+        return set_ if set_ - 4 <= g <= set_ + 12 else max(0, g)
+
     def step_to(self, t):
         while self.t < t:
             dt = min(2.0, t - self.t)
@@ -372,7 +381,7 @@ class SimGrill:
         if method == "PB.GetState":
             time.sleep(random.uniform(0.3, 0.6))  # the real module takes about this long to answer
             self.step_to(now)
-            g = int(round(self.g + random.uniform(-0.6, 0.6)))
+            g = self.shown(self.g + random.uniform(-0.6, 0.6), self.setpoint(self.t))
             vals = {"on": True, "fan": True, "auger": self.auger, "igniter": self.igniter,
                     "grill": max(0, g), "set": self.setpoint(self.t), "p1": int(self.p1) if self.t - self.start > 1200 else None,
                     "p1Target": 203}
@@ -401,7 +410,7 @@ def start_demo():
     last, prev, t = {}, None, sim.start
     while t < now - 2:
         sim.step_to(t)
-        vals = {"on": True, "fan": True, "auger": sim.auger, "igniter": sim.igniter, "grill": int(round(sim.g)),
+        vals = {"on": True, "fan": True, "auger": sim.auger, "igniter": sim.igniter, "grill": sim.shown(sim.g, sim.setpoint(t)),
                 "set": sim.setpoint(t), "p1": int(sim.p1) if t - sim.start > 1200 else None, "p1Target": 203}
         prev = ingest(decode(encode(vals, _A), _A), t, last, prev)
         t += 2
@@ -469,6 +478,41 @@ def lid_events(cook):
     return events, ev
 
 
+def heat_demand(cook, now):
+    """How hard the auger is working now compared with its usual rate at this set temp.
+
+    The grill reports exactly its set temp while it holds nearby, so the reading alone hides
+    small swings; the controller still feeds pellets off the real temperature. The usual rate
+    is the median auger duty over minutes this cook spent reading exactly the set temp."""
+    cur = cook[-1] if cook else {}
+    s = cur.get("set")
+    if not s or not cur.get("on"):
+        return None
+    same = []
+    for r in reversed(cook):
+        if r.get("set") != s or r["t"] < now - 3600:
+            break
+        same.append(r)
+    same.reverse()
+    buckets = {}
+    for r in same:
+        if r["t"] < now - 90:
+            buckets.setdefault(int((r["t"] - same[0]["t"]) // 60), []).append(r)
+    minutes = [sum(1 for r in b if r.get("auger")) / len(b) for b in buckets.values()
+               if len(b) >= 10 and all(r.get("grill") == s for r in b)]
+    recent = [r for r in same if r["t"] >= now - 90]
+    if len(minutes) < 5 or len(recent) < 10:
+        return {"learning": True, "minutes": len(minutes)}
+    base = statistics.median(minutes)
+    if base <= 0:
+        return None
+    duty = sum(1 for r in recent if r.get("auger")) / len(recent)
+    ratio = duty / base
+    level = ("coasting" if ratio < 0.75 else "steady" if ratio < 1.2 else
+             "working harder" if ratio < 1.45 else "losing heat")
+    return {"ratio": round(ratio, 2), "duty": round(duty * 100), "baseline": round(base * 100), "level": level}
+
+
 def derived():
     now = time.time()
     rows = samples
@@ -526,6 +570,7 @@ def derived():
                       "avgRecovery": round(statistics.fmean(e["recovery"] for e in events)) if events else None,
                       "openNow": open_now is not None}
 
+    out["demand"] = heat_demand(cook, now)
     out["rhythm"] = auger_rhythm(win(900))
     lph = settings["lbPerAugerHour"]
     if out.get("augerOnSeconds") is not None:
@@ -583,7 +628,8 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/state":
             with lock:
                 body = {k: v for k, v in latest.items() if k != "raw"}
-                body.update(now=time.time(), demo=cfg["demo"], phoneUrl=cfg["phoneUrl"], derived=derived())
+                body.update(now=time.time(), demo=cfg["demo"], phoneUrl=cfg["phoneUrl"], derived=derived(),
+                            series={"rtt": [round(x) for x in link["rtt"]], "ram": list(ram_hist)})
             return self.send(200, json.dumps(body), "application/json")
         if path == "/phone.svg" and cfg["phoneUrl"]:
             return self.send(200, qr.to_svg(cfg["phoneUrl"]), "image/svg+xml")

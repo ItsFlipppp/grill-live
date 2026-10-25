@@ -14,7 +14,9 @@
 - **Chart:** grill, set and probe temps over 15 min, 1 h, 4 h or the whole cook, with a strip marking every pellet feed
 - **Cook stats:** cook time, preheat time, peak temp, holding accuracy (±°F and swing) and time in zone (within ±10° of set)
 - **Pellets:** burn rate, pounds burned this cook and a **hopper countdown** that says when you'll run out
-- **Auger rhythm:** how long each feed lasts and how often it comes, plus duty over the last 5 and 15 minutes
+- **Heat demand:** how hard the auger is working compared with its normal pace at your set temp. It catches heat loss from an open lid, cold food or wind before the temperature shows it
+- **Auger rhythm:** how long each feed lasts against the full feed cycle, plus duty over the last 5 and 15 minutes
+- **Sparklines:** small trend lines on the main cards, so you can see where each number has been, not just where it is
 - **Lid-open detection:** each sudden drop at a steady set temp, how far it fell and how long it took to recover
 - **Nerd stats:** the grill's Wi-Fi signal (dBm) and which access point it's on, response time, link reliability and ESP32 free memory
 - **Themes:** Ember, Daylight (high contrast for bright sun), Midnight, Hickory and Smoke, or match your phone's light or dark mode. Each phone remembers its own pick
@@ -88,6 +90,8 @@ The Wi-Fi board in these grills is an ESP32 running Mongoose OS. It sits on a se
 - `PBL.StartWifiScan` runs every 10 minutes, for signal strength.
 
 It never sends commands to the grill. It answers in roughly 0.4 to 2 seconds per request, because the firmware builds every reply in a small built-in script interpreter.
+
+**Why the temperature sits on the set point:** while the grill is holding near its set temperature, the controller reports exactly the set temperature. Small swings, and the first part of a lid opening, never show up in the reading. The controller still feeds pellets based on the real temperature, so Heat demand watches the auger instead. Bigger swings do show in the temperature.
 
 **Go easy on it.** The ESP32 has very little memory. Aggressive port scans or rapid-fire requests can reboot the Wi-Fi board. The grill keeps cooking, but the app loses its connection while it restarts.
 

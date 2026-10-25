@@ -97,6 +97,8 @@ header .sub{color:var(--dim);font-size:13px}
 .tile .h{color:var(--faint);font-size:12px;margin-top:2px}
 .bar{height:6px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden}
 .bar>div{height:100%;background:linear-gradient(90deg,var(--ember),var(--ember2));width:0;transition:width .6s}
+.spark{display:block;width:100%;height:28px;margin-top:6px;overflow:visible}
+.probe .spark{height:32px;margin:8px 0 4px}
 .right{display:flex;flex-direction:column;gap:12px}
 .errors{display:none;background:rgba(var(--bad-rgb),.1);border:1px solid var(--bad-line);color:var(--bad-text);border-radius:12px;padding:10px 14px;font-weight:600}
 .chart-card{margin-top:16px}
@@ -185,12 +187,12 @@ header .sub{color:var(--dim);font-size:13px}
       <div class="tiles">
         <div class="tile"><div class="k">Cook time</div><div class="v" id="t-cook">--</div><div class="h" id="t-cook-h">since power on</div></div>
         <div class="tile"><div class="k">Preheat</div><div class="v" id="t-pre">--</div><div class="h" id="t-pre-h">power on → set temp</div></div>
-        <div class="tile"><div class="k">Peak temp</div><div class="v" id="t-peak">--</div><div class="h">this cook</div></div>
-        <div class="tile"><div class="k">Auger duty · 5 min</div><div class="v" id="t-d5">--</div><div class="bar"><div id="b-d5"></div></div></div>
-        <div class="tile"><div class="k">Auger duty · 15 min</div><div class="v" id="t-d15">--</div><div class="bar"><div id="b-d15"></div></div></div>
+        <div class="tile"><div class="k">Peak temp</div><div class="v" id="t-peak">--</div><svg class="spark" id="s-peak"></svg><div class="h">this cook</div></div>
+        <div class="tile"><div class="k">Auger duty · 5 min</div><div class="v" id="t-d5">--</div><svg class="spark" id="s-d5"></svg></div>
+        <div class="tile"><div class="k">Auger duty · 15 min</div><div class="v" id="t-d15">--</div><svg class="spark" id="s-d15"></svg></div>
         <div class="tile"><div class="k">Auger run time</div><div class="v" id="t-aon">--</div><div class="h">feeding pellets this cook</div></div>
-        <div class="tile"><div class="k">Holding accuracy</div><div class="v" id="t-hold">--</div><div class="h" id="t-hold-h">avg off set temp, last 15 min</div></div>
-        <div class="tile"><div class="k">Heat rate</div><div class="v" id="t-rate">--</div><div class="h">last 2½ min</div></div>
+        <div class="tile"><div class="k">Holding accuracy</div><div class="v" id="t-hold">--</div><svg class="spark" id="s-hold"></svg><div class="h" id="t-hold-h">avg off set temp, last 15 min</div></div>
+        <div class="tile"><div class="k">Heat demand</div><div class="v" id="t-dem">--</div><svg class="spark" id="s-dem"></svg><div class="h" id="t-dem-h">learning your grill's normal pace</div></div>
         <div class="tile"><div class="k">Time in zone</div><div class="v" id="t-zone">--</div><div class="h">within ±10° since reaching set</div></div>
       </div>
     </div>
@@ -221,9 +223,9 @@ header .sub{color:var(--dim);font-size:13px}
       <div class="tiles">
         <div class="tile"><div class="k">Hopper left</div><div class="v" id="h-left">--</div><div class="bar"><div id="b-hop"></div></div><div class="h" id="h-left-h">tap Filled hopper</div></div>
         <div class="tile"><div class="k">Runs out in</div><div class="v" id="h-empty">--</div><div class="h" id="h-empty-h">at the current burn</div></div>
-        <div class="tile"><div class="k">Burn rate</div><div class="v" id="p-rate">--</div><div class="h">lb per hour, last 15 min</div></div>
+        <div class="tile"><div class="k">Burn rate</div><div class="v" id="p-rate">--</div><svg class="spark" id="s-rate"></svg><div class="h">lb per hour, last 15 min</div></div>
         <div class="tile"><div class="k">Pellets this cook</div><div class="v" id="p-cook">--</div><div class="h" id="p-cook-h">estimate</div></div>
-        <div class="tile"><div class="k">Auger rhythm</div><div class="v" id="r-rh">--</div><div class="h" id="r-rh-h">feed length / feed every</div></div>
+        <div class="tile"><div class="k">Auger rhythm</div><div class="v" id="r-rh">--</div><svg class="spark" id="s-rh"></svg><div class="h" id="r-rh-h">feed length / feed every</div></div>
         <div class="tile"><div class="k">Lid opens</div><div class="v" id="l-count">--</div><div class="h" id="l-count-h">detected from temp drops</div></div>
       </div>
     </div>
@@ -231,9 +233,9 @@ header .sub{color:var(--dim);font-size:13px}
       <div class="sec-head"><h2>Nerd stats</h2></div>
       <div class="tiles">
         <div class="tile"><div class="k">Wi-Fi signal</div><div class="v"><span id="n-rssi">--</span> <svg id="n-bars" width="22" height="16" viewBox="0 0 22 16"></svg></div><div class="h" id="n-rssi-h">scans every 10 min</div></div>
-        <div class="tile"><div class="k">Response time</div><div class="v" id="n-rtt">--</div><div class="h" id="n-rtt-h">grill → this PC</div></div>
+        <div class="tile"><div class="k">Response time</div><div class="v" id="n-rtt">--</div><svg class="spark" id="s-rtt"></svg><div class="h" id="n-rtt-h">grill → this PC</div></div>
         <div class="tile"><div class="k">Link reliability</div><div class="v" id="n-rel">--</div><div class="h" id="n-rel-h">polls answered</div></div>
-        <div class="tile"><div class="k">Free memory</div><div class="v" id="n-ram">--</div><div class="h" id="n-ram-h">ESP32 RAM</div></div>
+        <div class="tile"><div class="k">Free memory</div><div class="v" id="n-ram">--</div><svg class="spark" id="s-ram"></svg><div class="h" id="n-ram-h">ESP32 RAM</div></div>
         <div class="tile"><div class="k">Readings this cook</div><div class="v" id="n-reads">--</div><div class="h">status refreshes every 4 s</div></div>
         <div class="tile"><div class="k">Module uptime</div><div class="v" id="t-up">--</div><div class="h">Wi-Fi board boots with the grill</div></div>
       </div>
@@ -325,6 +327,106 @@ function drawChart(){
   el.innerHTML = svg;
 }
 
+let IX = null;
+function indexHist(){
+  const n = hist.length;
+  if(IX && IX.n === n) return IX;
+  const T = new Float64Array(n), PA = new Float64Array(n + 1), PS = new Float64Array(n + 1);
+  for(let i = 0; i < n; i++){
+    T[i] = hist[i].t;
+    PA[i + 1] = PA[i] + (hist[i].auger ? 1 : 0);
+    const dt = i + 1 < n ? hist[i + 1].t - hist[i].t : 0;
+    PS[i + 1] = PS[i] + (hist[i].auger && dt < 15 ? dt : 0);
+  }
+  return IX = {n, T, PA, PS};
+}
+function lowerBound(T, t){ let a = 0, b = T.length; while(a < b){ const m = (a + b) >> 1; if(T[m] < t) a = m + 1; else b = m; } return a; }
+function dutyAt(t0, t1){ const i0 = lowerBound(IX.T, t0), i1 = lowerBound(IX.T, t1 + 0.001); return i1 - i0 >= 5 ? (IX.PA[i1] - IX.PA[i0]) / (i1 - i0) : null; }
+function meanAt(t0, t1, f){
+  const i0 = lowerBound(IX.T, t0), i1 = lowerBound(IX.T, t1 + 0.001);
+  let sum = 0, n = 0;
+  for(let i = i0; i < i1; i++){ const v = f(hist[i]); if(v != null){ sum += v; n++; } }
+  return n ? sum / n : null;
+}
+const augerSecondsBy = t => IX.PS[lowerBound(IX.T, t + 0.001)];
+function sampleSeries(span, fn, N = 48){
+  const now = state.now, start = Math.max(now - span, hist[0].t), step = (now - start) / N, out = [];
+  for(let k = 0; k <= N; k++){ const t = start + step * k; out.push([t, fn(t, step)]); }
+  return out;
+}
+function spark(id, pts, o = {}){
+  const el = $(id); if(!el) return;
+  const W = el.clientWidth, H = el.clientHeight, ok = pts.filter(p => p[1] != null);
+  if(!W || !H || ok.length < 2){ el.innerHTML = ''; return; }
+  let lo = o.min ?? Math.min(...ok.map(p => p[1])), hi = o.max ?? Math.max(...ok.map(p => p[1]));
+  if(o.ref != null){ lo = Math.min(lo, o.ref); hi = Math.max(hi, o.ref); }
+  const minSpan = o.minSpan || 1;
+  if(hi - lo < minSpan){ const mid = (hi + lo) / 2; lo = Math.max(o.min ?? -Infinity, mid - minSpan / 2); hi = lo + minSpan; }
+  const t0 = ok[0][0], t1 = ok[ok.length - 1][0];
+  const X = t => 2 + (t - t0) / ((t1 - t0) || 1) * (W - 6), Y = v => 3 + (1 - (v - lo) / (hi - lo)) * (H - 6);
+  let line = '', pen = false;
+  for(const [t, v] of pts){ if(v == null){ pen = false; continue; } line += (pen ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Y(v).toFixed(1); pen = true; }
+  const area = `M${X(t0).toFixed(1)} ${H}` + ok.map(([t, v]) => `L${X(t).toFixed(1)} ${Y(v).toFixed(1)}`).join('') + `L${X(t1).toFixed(1)} ${H}Z`;
+  const col = o.color || C('ember'), last = ok[ok.length - 1], gid = 'g' + id;
+  el.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  el.innerHTML = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".26"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>`
+    + (o.ref != null ? `<line x1="0" x2="${W}" y1="${Y(o.ref).toFixed(1)}" y2="${Y(o.ref).toFixed(1)}" stroke="${C('faint')}" stroke-width="1" stroke-dasharray="2 3"/>` : '')
+    + `<path d="${area}" fill="url(#${gid})"/>`
+    + `<path d="${line}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`
+    + `<circle cx="${X(last[0]).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="2.6" fill="${col}"/>`;
+}
+
+function feedList(){
+  const list = [];
+  let cur = null;
+  for(let i = 1; i < hist.length; i++){
+    const a = hist[i - 1], b = hist[i];
+    if(b.t - a.t > 15){ cur = null; continue; }
+    if(b.auger && !a.auger){
+      if(cur && cur.len != null){ cur.every = b.t - cur.t; list.push(cur); }
+      cur = {t: b.t, len: null};
+    } else if(a.auger && !b.auger && cur && cur.len == null) cur.len = b.t - cur.t;
+  }
+  return list;
+}
+function sparkLines(id, series, o = {}){
+  const el = $(id); if(!el) return;
+  const W = el.clientWidth, H = el.clientHeight, all = series.flatMap(s => s.pts.filter(p => p[1] != null));
+  if(!W || !H || all.length < 4){ el.innerHTML = ''; return; }
+  const lo = o.min ?? Math.min(...all.map(p => p[1])), hi = Math.max(lo + 1, ...all.map(p => p[1]));
+  const t0 = Math.min(...all.map(p => p[0])), t1 = Math.max(...all.map(p => p[0]));
+  const X = t => 2 + (t - t0) / ((t1 - t0) || 1) * (W - 6), Y = v => 3 + (1 - (v - lo) / (hi - lo)) * (H - 6);
+  el.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  el.innerHTML = series.map(({pts, color}) => {
+    let line = '', pen = false, last = null;
+    for(const [t, v] of pts){ if(v == null){ pen = false; continue; } line += (pen ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Y(v).toFixed(1); pen = true; last = [t, v]; }
+    return line ? `<path d="${line}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(last[0]).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="2.6" fill="${color}"/>` : '';
+  }).join('');
+}
+
+function drawSparks(s, d){
+  if(!hist.length || !state) return;
+  indexHist();
+  const now = state.now, lph = d.lbPerAugerHour || 4, cookStart = d.cookStart || hist[0].t;
+  const pct = win => t => { const v = dutyAt(t - win, t); return v == null ? null : v * 100; };
+  spark('s-d5', sampleSeries(3600, pct(300)), {minSpan: 25});
+  spark('s-d15', sampleSeries(7200, pct(900)), {minSpan: 25});
+  const dem = d.demand;
+  if(dem && dem.baseline){
+    const col = {coasting: C('set'), steady: C('ok'), 'working harder': C('ember'), 'losing heat': C('bad')}[dem.level];
+    spark('s-dem', sampleSeries(3600, t => { const v = dutyAt(t - 90, t); return v == null ? null : v * 100 / dem.baseline; }), {ref: 1, min: 0, color: col});
+  } else spark('s-dem', []);
+  spark('s-hold', sampleSeries(3600, (t, step) => meanAt(t - step, t, r => r.grill != null && r.set ? r.grill - r.set : null)), {ref: 0, minSpan: 10, color: C('set')});
+  spark('s-peak', sampleSeries(now - cookStart, (t, step) => meanAt(t - step, t, r => r.grill)), {minSpan: 20});
+  spark('s-rate', sampleSeries(7200, t => { const v = dutyAt(t - 900, t); return v == null ? null : v * lph; }), {min: 0, color: C('ember2')});
+  const fl = feedList(), feedMean = (key, t) => { const xs = fl.filter(f => f.t > t - 300 && f.t <= t).map(f => f[key]); return xs.length >= 3 ? xs.reduce((a, b) => a + b, 0) / xs.length : null; };
+  sparkLines('s-rh', [{pts: sampleSeries(3600, t => feedMean('len', t)), color: C('ember')}, {pts: sampleSeries(3600, t => feedMean('every', t)), color: C('set')}]);
+  for(const k of ['p1', 'p2', 'p3', 'p4']) if(s[k] != null) spark('s-' + k, sampleSeries(3600, (t, step) => meanAt(t - step, t, r => r[k])), {minSpan: 10, color: C(k)});
+  const ser = state.series || {};
+  spark('s-rtt', (ser.rtt || []).map((v, i) => [i, v]), {min: 0, color: C('dim')});
+  spark('s-ram', (ser.ram || []).map(([t, v]) => [t, v / 1024]), {minSpan: 4, color: C('dim')});
+}
+
 function render(){
   if(!state) return;
   const s = state.sample || {}, d = state.derived || {}, u = state.fahrenheit ? '°F' : '°C';
@@ -347,9 +449,11 @@ function render(){
     const arrow = d.heatRate > 0.5 ? '▲' : d.heatRate < -0.5 ? '▼' : '●';
     tr = `<b>${arrow} ${d.heatRate>0?'+':''}${d.heatRate}${u}/min</b>`;
     if(d.etaSet) tr += ` · set temp in ~${dur(d.etaSet)}`;
+    else if(s.grill!=null && s.set && s.grill === s.set) tr += ' · holding near set temp';
     else if(s.grill!=null && s.set && Math.abs(s.grill-s.set)<=8) tr += ' · holding at set temp';
   }
   if(d.lid && d.lid.openNow) tr += ' · <span class="lidnow">lid open?</span>';
+  else if(d.demand && d.demand.level === 'losing heat') tr += ' · <span class="lidnow">losing heat</span>';
   $('trend').innerHTML = tr;
   for(const k of ['fan','auger','igniter','light','prime']) $('c-'+k).classList.toggle('on', !!s[k]);
   const errs = s.errors || [];
@@ -359,12 +463,20 @@ function render(){
   $('t-cook-h').textContent = d.cookStart ? 'since ' + new Date(d.cookStart*1000).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : 'grill off';
   $('t-pre').textContent = d.preheatSeconds!=null ? dur(d.preheatSeconds) : (s.on ? 'heating' : '--');
   $('t-peak').textContent = d.peak!=null ? d.peak + u : '--';
-  for(const [k,v] of [['d5',d.augerDuty5],['d15',d.augerDuty15]]){ $('t-'+k).textContent = v!=null ? v+'%' : '--'; $('b-'+k).style.width = (v||0)+'%'; }
+  for(const [k,v] of [['d5',d.augerDuty5],['d15',d.augerDuty15]]) $('t-'+k).textContent = v!=null ? v+'%' : '--';
   $('t-aon').textContent = d.augerOnSeconds!=null ? dur(d.augerOnSeconds) : '--';
   $('t-hold').textContent = d.holdAvgDev!=null ? '±' + d.holdAvgDev + u : '--';
   const sgn = v => (v > 0 ? '+' : '') + v;
   $('t-hold-h').textContent = d.holdSwing ? `swing ${sgn(d.holdSwing[0])} to ${sgn(d.holdSwing[1])}${u}, last 15 min` : 'starts once set temp is reached';
-  $('t-rate').textContent = d.heatRate!=null ? (d.heatRate>0?'+':'') + d.heatRate + u + '/m' : '--';
+  const dem = d.demand;
+  if(dem && dem.ratio!=null){
+    const col = {coasting: C('set'), steady: C('ok'), 'working harder': C('ember'), 'losing heat': C('bad')}[dem.level];
+    $('t-dem').textContent = dem.ratio.toFixed(1) + '×';
+    $('t-dem-h').textContent = `${dem.level === 'losing heat' ? 'losing heat: lid, cold food or wind' : dem.level} · auger ${dem.duty}% vs ${dem.baseline}% normal`;
+  } else {
+    $('t-dem').textContent = '--';
+    $('t-dem-h').textContent = dem && dem.learning ? `learning normal pace (${dem.minutes}/5 min holding)` : 'starts once the grill holds its set temp';
+  }
   $('t-zone').textContent = d.inZone!=null ? d.inZone + '%' : '--';
   renderExtras(s, d, u);
   const pr = d.probes || {};
@@ -374,8 +486,9 @@ function render(){
     let h = tgt ? `target ${tgt}${u}` : 'no target';
     if(info.rate!=null) h += ` · ${info.rate>0?'+':''}${info.rate}${u}/min`;
     if(info.eta) h += ` · done in ~${dur(info.eta)}`;
-    return `<div class="card probe" style="border-left-color:${PROBE_COLORS[k]}"><div style="color:var(--dim);font-size:12px">Probe ${i+1}</div><div class="v">${v}${u}</div><div style="color:var(--faint);font-size:12px">${h}</div></div>`;
+    return `<div class="card probe" style="border-left-color:${PROBE_COLORS[k]}"><div style="color:var(--dim);font-size:12px">Probe ${i+1}</div><div class="v">${v}${u}</div><svg class="spark" id="s-${k}"></svg><div style="color:var(--faint);font-size:12px">${h}</div></div>`;
   }).join('');
+  drawSparks(s, d);
   drawChart();
 }
 
@@ -395,8 +508,8 @@ function renderExtras(s, d, u){
   $('p-cook').textContent = d.pelletsCook!=null ? '≈' + d.pelletsCook + ' lb' : '--';
   $('p-cook-h').textContent = `estimate · ${d.lbPerAugerHour} lb per auger-hour`;
   const rh = d.rhythm;
-  $('r-rh').textContent = rh ? `${Math.round(rh.on)}s / ${Math.round(rh.every)}s` : '--';
-  $('r-rh-h').textContent = rh ? `${rh.perMin} feeds/min · ${rh.count} in 15 min` : 'feed length / feed every';
+  $('r-rh').innerHTML = rh ? `<span style="color:var(--ember)">${Math.round(rh.on)}s</span> / <span style="color:var(--set)">${Math.round(rh.every)}s</span>` : '--';
+  $('r-rh-h').innerHTML = rh ? `<span style="color:var(--ember)">feeding</span> vs <span style="color:var(--set)">full cycle</span> · ${rh.perMin} feeds/min` : 'feeding time vs full cycle';
   const lid = d.lid;
   $('l-count').textContent = lid ? lid.count : '--';
   $('l-count-h').textContent = lid && lid.last ? `last: −${lid.last.drop}${u}, back in ${dur(lid.last.recovery)}` : 'detected from temp drops';

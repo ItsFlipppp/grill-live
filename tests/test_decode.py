@@ -56,6 +56,39 @@ class StatsTest(unittest.TestCase):
         self.assertIsNone(open_now)
 
 
+class HeatDemandTest(unittest.TestCase):
+    @staticmethod
+    def cook(minutes, recent_duty, set_=350):
+        rows, t = [], 0.0
+        for m in range(minutes):  # holding at the set temp, auger on 2 of every 5 polls (40%)
+            for i in range(30):
+                rows.append({"t": t, "on": True, "set": set_, "grill": set_, "auger": i % 5 < 2})
+                t += 2
+        for i in range(45):  # last 90 s at the given duty
+            rows.append({"t": t, "on": True, "set": set_, "grill": set_, "auger": (i % 20) < recent_duty * 20})
+            t += 2
+        return rows, t
+
+    def test_losing_heat_while_reading_is_pinned(self):
+        rows, now = self.cook(10, 0.6)
+        d = server.heat_demand(rows, now)
+        self.assertEqual(d["baseline"], 40)
+        self.assertEqual(d["level"], "losing heat")
+
+    def test_steady_and_learning(self):
+        rows, now = self.cook(10, 0.4)
+        self.assertEqual(server.heat_demand(rows, now)["level"], "steady")
+        rows, now = self.cook(3, 0.6)
+        self.assertTrue(server.heat_demand(rows, now)["learning"])
+
+    def test_new_set_temp_starts_over(self):
+        rows, now = self.cook(10, 0.4)
+        later, now2 = self.cook(2, 0.4, set_=225)
+        for r in later:
+            r["t"] += now
+        self.assertTrue(server.heat_demand(rows + later, now + now2)["learning"])
+
+
 try:
     import cv2
     import numpy
